@@ -8,10 +8,11 @@ import (
 )
 
 var (
-	ErrQueueClosed      = errors.New("mq: Queue is closed")
-	ErrQueueEmtpy       = errors.New("mq: Queue is empty")
-	ErrQueueFilled      = errors.New("mq: Queue is full")
-	ErrQueueUnavailable = errors.New("mq: Queue not found")
+	ErrQueueClosed         = errors.New("mq: Queue is closed")
+	ErrQueueEmtpy          = errors.New("mq: Queue is empty")
+	ErrQueueFilled         = errors.New("mq: Queue is full")
+	ErrQueueUnavailable    = errors.New("mq: Queue not found")
+	ErrConsumerUnavailable = errors.New("mq: Consumer not found")
 )
 
 // This output is shown if a panic happens.

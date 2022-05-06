@@ -6,7 +6,6 @@ import (
 )
 
 type Producer interface {
-	OpenQueue(consumersAllowed int) (*queue, error)
 	Publish(q *queue, msg *message) error
 }
 
@@ -16,21 +15,24 @@ type producer struct {
 
 // Opens a new Queue to receive and send messages
 func OpenQueue(consumersAllowed int) (*queue, error) {
-	return newQueue(consumersAllowed), nil
+	// generate new queue
+	que := newQueue(consumersAllowed)
+	// open it for receiving and sending messages
+	que.isOpen = true
+
+	return que, nil
 }
 
 // Publish sends the message 'msg' over queue 'q' through producer 'p'
 func (p *producer) Publish(q *queue, msg message) error {
 	log.Printf("%s: publishing message", p.Name)
-	// Check if queue is valid.
-	if q.Data == nil {
+
+	// Check if queue is available.
+	if q == nil || q.Data == nil {
 		return ErrQueueUnavailable
 	}
 
-	if len(q.Data) > MaxNumOfMessages {
-		return ErrQueueFilled
-	}
-
+	// enqueue the message as JSON
 	err := q.enqueueMessageAsJSON(msg)
 	if err != nil {
 		return err

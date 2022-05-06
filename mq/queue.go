@@ -15,7 +15,7 @@ const (
 
 // A FIFO based Queue implementation
 type Queue interface {
-	StartConsuming(int, time.Duration) error
+	StartConsuming(intervalDuration time.Duration) error
 	StopConsuming() <-chan struct{}
 	AddConsumer(listener *consumer) error
 
@@ -49,7 +49,7 @@ func newQueue(poolSize int) *queue {
 		Data:      make(chan []byte, MaxNumOfMessages),
 		consumers: make([]*consumer, 0, poolSize),
 		size:      0,
-		isOpen:    true,
+		isOpen:    false,
 	}
 }
 
@@ -63,7 +63,7 @@ func (q *queue) enqueue(value []byte) error {
 		return ErrQueueClosed
 	}
 
-	if q.size < MaxNumOfMessages {
+	if len(q.Data) < MaxNumOfMessages && q.size < MaxNumOfMessages {
 		// Push the msg to buffered channel Data of queue.
 		q.Data <- value
 		q.size++
@@ -111,6 +111,11 @@ func (q *queue) dequeue() (*message, error) {
 func (q *queue) AddConsumer(cns *consumer) error {
 	q.Lock()
 	defer q.Unlock()
+
+	// Check if consumer exists
+	if cns == nil {
+		return ErrConsumerUnavailable
+	}
 
 	// Check if Queue is closed.
 	if !q.isOpen {
